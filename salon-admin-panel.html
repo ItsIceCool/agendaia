@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgendaIA — Panel de Administrador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #F5F2ED;
+    --surface:  #FDFCFA;
+    --surface2: #F0EDE6;
+    --border:   #E0DAD0;
+    --border2:  #C8BFB0;
+    --text:     #1A1714;
+    --text2:    #6B6358;
+    --text3:    #A09890;
+    --accent:   #C4956A;
+    --accent2:  #8B5E3C;
+    --teal:     #2A7B6F;
+    --teal-bg:  #E8F4F2;
+    --coral:    #C4584A;
+    --coral-bg: #FAF0EE;
+    --amber:    #B07A28;
+    --amber-bg: #FBF5E8;
+    --purple:   #6B5FA0;
+    --purple-bg:#F2F0FA;
+    --shadow:   0 1px 3px rgba(26,23,20,.06), 0 4px 16px rgba(26,23,20,.04);
+    --radius:   12px;
+    --sidebar:  240px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ── Sidebar ── */
+  .sidebar {
+    width: var(--sidebar);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 100;
+    padding: 0;
+  }
+
+  .sidebar-logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-mark {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .logo-icon {
+    width: 34px; height: 34px;
+    background: var(--text);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .logo-icon svg { width: 18px; height: 18px; }
+  .logo-text { display: flex; flex-direction: column; }
+  .logo-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text3);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+
+  .sidebar-salon {
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .salon-selector {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .salon-selector:hover { border-color: var(--border2); }
+  .salon-avatar {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500; color: #fff;
+    flex-shrink: 0;
+  }
+  .salon-info { flex: 1; min-width: 0; }
+  .salon-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .salon-plan { font-size: 10px; color: var(--text3); }
+  .chevron { color: var(--text3); font-size: 10px; }
+
+  .sidebar-nav {
+    flex: 1;
+    padding: 12px 12px;
+    display: flex; flex-direction: column; gap: 2px;
+    overflow-y: auto;
+  }
+  .nav-section-label {
+    font-size: 10px; font-weight: 500; color: var(--text3);
+    text-transform: uppercase; letter-spacing: .06em;
+    padding: 8px 8px 4px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background .12s, color .12s;
+    color: var(--text2);
+    font-size: 13px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--text); color: #fff; }
+  .nav-item.active .nav-icon { color: #fff; }
+  .nav-icon { width: 16px; height: 16px; flex-shrink: 0; opacity: .7; }
+  .nav-item.active .nav-icon { opacity: 1; }
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: #fff;
+    font-size: 10px; font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 99px;
+  }
+  .nav-item.active .nav-badge { background: rgba(255,255,255,.25); }
+
+  .sidebar-footer {
+    padding: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .user-card {
+    display: flex; align-items: center; gap: 9px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .user-card:hover { background: var(--surface2); }
+  .user-avatar {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--teal);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 500; color: #fff;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 12px; font-weight: 500; }
+  .user-role { font-size: 10px; color: var(--text3); }
+
+  /* ── Main ── */
+  .main {
+    margin-left: var(--sidebar);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 28px;
+    height: 56px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 8px; }
+  .page-title { font-size: 15px; font-weight: 500; }
+  .page-date { font-size: 12px; color: var(--text3); }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: none; cursor: pointer;
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    transition: all .12s;
+  }
+  .btn-primary { background: var(--text); color: #fff; }
+  .btn-primary:hover { background: #2e2a26; }
+  .btn-ghost { background: transparent; color: var(--text2); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--surface2); }
+  .btn-icon { padding: 7px; border-radius: 8px; background: transparent; border: 1px solid var(--border); cursor: pointer; color: var(--text2); transition: all .12s; }
+  .btn-icon:hover { background: var(--surface2); }
+
+  .content { padding: 28px; display: flex; flex-direction: column; gap: 24px; }
+
+  /* ── Tabs ── */
+  .tabs { display: flex; gap: 2px; background: var(--surface2); border-radius: 10px; padding: 3px; width: fit-content; }
+  .tab { padding: 6px 16px; border-radius: 7px; font-size: 13px; cursor: pointer; color: var(--text2); transition: all .12s; border: none; background: transparent; font-family: inherit; }
+  .tab.active { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+
+  /* ── Metric cards ── */
+  .metrics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    box-shadow: var(--shadow);
+  }
+  .metric-label { font-size: 12px; color: var(--text3); font-weight: 500; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 8px; }
+  .metric-value { font-size: 28px; font-weight: 300; line-height: 1; margin-bottom: 6px; font-family: 'DM Serif Display', serif; }
+  .metric-change { font-size: 12px; display: flex; align-items: center; gap: 4px; }
+  .up { color: var(--teal); }
+  .down { color: var(--coral); }
+  .neutral { color: var(--text3); }
+
+  /* ── Calendar strip ── */
+  .day-strip {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    box-shadow: var(--shadow);
+  }
+  .day-strip-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .day-strip-title { font-size: 13px; font-weight: 500; }
+  .days-row { display: flex; gap: 6px; }
+  .day-pill {
+    flex: 1;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 8px 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .12s;
+    border: 1px solid transparent;
+  }
+  .day-pill:hover { background: var(--surface2); }
+  .day-pill.today { background: var(--text); border-color: var(--text); }
+  .day-pill.has-appts { border-color: var(--border); }
+  .day-name { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 4px; }
+  .day-pill.today .day-name { color: rgba(255,255,255,.6); }
+  .day-num { font-size: 16px; font-weight: 500; line-height: 1; margin-bottom: 5px; }
+  .day-pill.today .day-num { color: #fff; }
+  .day-dots { display: flex; gap: 2px; }
+  .day-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); }
+  .day-pill.today .day-dot { background: rgba(255,255,255,.7); }
+
+  /* ── Appointments ── */
+  .section-header { display: flex; align-items: center; justify-content: space-between; }
+  .section-title { font-size: 15px; font-weight: 500; }
+  .section-sub { font-size: 12px; color: var(--text3); }
+
+  .appt-list { display: flex; flex-direction: column; gap: 8px; }
+  .appt-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: var(--shadow);
+    transition: border-color .15s, transform .1s;
+    cursor: pointer;
+  }
+  .appt-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+
+  .appt-time {
+    text-align: center;
+    min-width: 52px;
+  }
+  .time-main { font-size: 16px; font-weight: 500; font-family: 'DM Serif Display', serif; line-height: 1; }
+  .time-ampm { font-size: 10px; color: var(--text3); }
+
+  .appt-divider { width: 1px; height: 44px; background: var(--border); flex-shrink: 0; }
+
+  .appt-color-bar { width: 3px; height: 44px; border-radius: 2px; flex-shrink: 0; }
+
+  .appt-info { flex: 1; min-width: 0; }
+  .appt-client { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+  .appt-service { font-size: 12px; color: var(--text2); }
+  .appt-meta { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 8px; margin-top: 3px; }
+
+  .appt-stylist { display: flex; align-items: center; gap: 6px; }
+  .stylist-avatar { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: #fff; flex-shrink: 0; }
+
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11px; font-weight: 500;
+    padding: 3px 9px; border-radius: 99px;
+  }
+  .status-dot { width: 5px; height: 5px; border-radius: 50%; }
+  .s-confirmed { background: var(--teal-bg); color: var(--teal); }
+  .s-confirmed .status-dot { background: var(--teal); }
+  .s-pending { background: var(--amber-bg); color: var(--amber); }
+  .s-pending .status-dot { background: var(--amber); }
+  .s-done { background: var(--surface2); color: var(--text3); }
+  .s-done .status-dot { background: var(--text3); }
+  .s-cancelled { background: var(--coral-bg); color: var(--coral); }
+  .s-cancelled .status-dot { background: var(--coral); }
+
+  .appt-price { display: none; }
+
+  .appt-actions { display: flex; gap: 6px; }
+  .action-btn {
+    width: 30px; height: 30px; border-radius: 7px;
+    border: 1px solid var(--border); background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--text2); transition: all .12s;
+  }
+  .action-btn:hover { background: var(--surface2); border-color: var(--border2); }
+  .action-btn.danger:hover { background: var(--coral-bg); border-color: var(--coral); color: var(--coral); }
+
+  /* ── Two col layout ── */
+  .two-col { display: grid; grid-template-columns: 1fr 320px; gap: 20px; }
+
+  /* ── Today summary widget ── */
+  .summary-card {
+    background: var(--text);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    color: #fff;
+    box-shadow: var(--shadow);
+  }
+  .summary-title { font-size: 12px; color: rgba(255,255,255,.5); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 16px; }
+  .summary-big { font-family: 'DM Serif Display', serif; font-size: 48px; line-height: 1; margin-bottom: 4px; }
+  .summary-sub { font-size: 13px; color: rgba(255,255,255,.5); margin-bottom: 22px; }
+  .summary-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .summary-stat { background: rgba(255,255,255,.07); border-radius: 8px; padding: 10px 12px; }
+  .summary-stat-val { font-size: 20px; font-weight: 500; line-height: 1; margin-bottom: 2px; }
+  .summary-stat-label { font-size: 11px; color: rgba(255,255,255,.45); }
+
+  /* ── IA chat activity ── */
+  .activity-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .activity-header {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .activity-title { font-size: 13px; font-weight: 500; }
+  .ia-badge { display: flex; align-items: center; gap: 5px; background: var(--teal-bg); color: var(--teal); font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 99px; }
+  .ia-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+
+  .chat-feed { padding: 14px 18px; display: flex; flex-direction: column; gap: 12px; max-height: 320px; overflow-y: auto; }
+  .chat-item { display: flex; gap: 10px; align-items: flex-start; }
+  .chat-avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; flex-shrink: 0; }
+  .chat-bubble { background: var(--surface2); border-radius: 0 8px 8px 8px; padding: 8px 11px; flex: 1; }
+  .chat-bubble.ia { background: var(--teal-bg); border-radius: 8px 0 8px 8px; }
+  .chat-name { font-size: 11px; font-weight: 500; margin-bottom: 2px; }
+  .chat-msg { font-size: 12px; color: var(--text2); line-height: 1.45; }
+  .chat-time { font-size: 10px; color: var(--text3); margin-top: 3px; }
+
+  /* ── Servicios ── */
+  .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .service-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .service-card:hover { border-color: var(--border2); transform: translateY(-1px); }
+  .service-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; margin-bottom: 10px; }
+  .service-name { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
+  .service-duration { font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+  .service-price { font-size: 16px; font-weight: 500; }
+  .service-count { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+  /* ── Table view ── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: .04em; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  tbody tr { border-bottom: 1px solid var(--border); cursor: pointer; transition: background .1s; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: var(--surface2); }
+  tbody td { padding: 12px 14px; vertical-align: middle; }
+
+  /* ── Pages ── */
+  .page { display: none; }
+  .page.active { display: flex; flex-direction: column; gap: 24px; }
+
+  /* ── Notification bell ── */
+  .notif-wrap { position: relative; }
+  .notif-count { position: absolute; top: -3px; right: -3px; width: 15px; height: 15px; background: var(--coral); border-radius: 50%; font-size: 9px; font-weight: 500; color: #fff; display: flex; align-items: center; justify-content: center; border: 1.5px solid var(--surface); }
+
+  /* ── Empty state ── */
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--text3); }
+  .empty-icon { font-size: 32px; margin-bottom: 10px; }
+  .empty-title { font-size: 14px; font-weight: 500; color: var(--text2); margin-bottom: 4px; }
+  .empty-sub { font-size: 12px; }
+
+  /* ── Modal ── */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(26,23,20,.4); z-index: 200; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border-radius: 16px; padding: 28px; width: 100%; max-width: 440px; box-shadow: 0 20px 60px rgba(0,0,0,.15); animation: slideUp .2s ease; }
+  @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-title { font-size: 17px; font-weight: 500; margin-bottom: 20px; font-family: 'DM Serif Display', serif; }
+  .form-row { margin-bottom: 14px; }
+  .form-label { font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 5px; display: block; }
+  .form-input, .form-select {
+    width: 100%; padding: 9px 12px;
+    border: 1px solid var(--border); border-radius: 8px;
+    background: var(--bg); color: var(--text);
+    font-family: inherit; font-size: 13px;
+    transition: border-color .12s;
+    outline: none;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--text); }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 22px; }
+
+  /* ── Charts placeholder ── */
+  .chart-bar-wrap { display: flex; align-items: flex-end; gap: 6px; height: 80px; padding-top: 8px; }
+  .chart-bar { flex: 1; border-radius: 4px 4px 0 0; background: var(--surface2); transition: height .3s; cursor: pointer; }
+  .chart-bar:hover { background: var(--accent); opacity: .8; }
+  .chart-bar.active { background: var(--accent); }
+  .chart-labels { display: flex; gap: 6px; margin-top: 4px; }
+  .chart-label { flex: 1; text-align: center; font-size: 10px; color: var(--text3); }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .sidebar { width: 56px; }
+    .logo-text, .salon-info, .chevron, .nav-item span, .user-name, .user-role, .sidebar-logo .logo-name, .sidebar-logo .logo-sub, .nav-section-label, .salon-selector .salon-name, .salon-selector .salon-plan { display: none; }
+    .sidebar-logo { padding: 14px; display: flex; justify-content: center; }
+    .logo-mark { justify-content: center; }
+    .sidebar-salon { padding: 10px 8px; }
+    .salon-selector { justify-content: center; padding: 8px; }
+    .nav-item { justify-content: center; padding: 10px; }
+    .nav-badge { display: none; }
+    .user-card { justify-content: center; }
+    .main { margin-left: 56px; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .services-grid { grid-template-columns: 1fr 1fr; }
+    :root { --sidebar: 56px; }
+  }
+  @media (max-width: 600px) {
+    .content { padding: 16px; }
+    .metrics-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">
+        <svg viewBox="0 0 18 18" fill="none">
+          <rect x="1" y="1" width="7" height="7" rx="2" fill="white" opacity=".9"/>
+          <rect x="10" y="1" width="7" height="7" rx="2" fill="white" opacity=".5"/>
+          <rect x="1" y="10" width="7" height="7" rx="2" fill="white" opacity=".5"/>
+          <rect x="10" y="10" width="7" height="7" rx="2" fill="white" opacity=".9"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="logo-name">AgendaIA</span>
+        <span class="logo-sub">Panel Admin</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-salon">
+    <div class="salon-selector">
+      <div class="salon-avatar">SB</div>
+      <div class="salon-info">
+        <div class="salon-name">Salón Bella</div>
+        <div class="salon-plan">Plan Pro</div>
+      </div>
+      <span class="chevron">▾</span>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <span class="nav-section-label">Principal</span>
+    <div class="nav-item active" onclick="showPage('agenda')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="3" width="14" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M1 7h14" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M5 1v4M11 1v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <span>Agenda</span>
+      <span class="nav-badge">8</span>
+    </div>
+    <div class="nav-item" onclick="showPage('chat')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none">
+        <path d="M2 3a1 1 0 011-1h10a1 1 0 011 1v7a1 1 0 01-1 1H5l-3 2V3z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/>
+      </svg>
+      <span>Chat IA</span>
+      <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-item" onclick="showPage('clientes')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none">
+        <circle cx="6" cy="5" r="3" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M1 14c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        <circle cx="12" cy="5" r="2" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M14 13c0-1.86-1.34-3.4-3.14-3.93" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <span>Clientes</span>
+    </div>
+    <span class="nav-section-label" style="margin-top:8px;">Configuración</span>
+    <div class="nav-item" onclick="showPage('servicios')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <span>Servicios</span>
+    </div>
+    <div class="nav-item" onclick="showPage('configuracion')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none">
+        <path d="M8 10a2 2 0 100-4 2 2 0 000 4z" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M13.3 6.7l-1-1.73a1 1 0 00-.87-.5h-.01a1 1 0 00-.87.5l-.5.87M8 1.5V3M3.56 3.56l1.06 1.06M1.5 8H3M3.56 12.44l1.06-1.06M8 13v1.5M12.44 12.44l-1.06-1.06M14.5 8H13M12.44 3.56L11.38 4.62" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+      </svg>
+      <span>Configuración</span>
+    </div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">MG</div>
+      <div>
+        <div class="user-name">María García</div>
+        <div class="user-role">Administradora</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="page-title" id="topbar-title">Agenda de hoy</span>
+      <span class="page-date" id="topbar-date"></span>
+    </div>
+    <div class="topbar-right">
+      <div class="notif-wrap">
+        <button class="btn-icon" title="Notificaciones">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1a5 5 0 015 5v3l1.5 2H1.5L3 9V6a5 5 0 015-5zM6.5 13a1.5 1.5 0 003 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div class="notif-count">3</div>
+      </div>
+      <button class="btn btn-primary" onclick="document.getElementById('modal-cita').classList.add('open')">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        Nueva cita
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ════ PAGE: AGENDA ════ -->
+    <div class="page active" id="page-agenda">
+
+      <div class="metrics-grid" style="grid-template-columns:repeat(3,1fr);">
+        <div class="metric-card">
+          <div class="metric-label">Citas hoy</div>
+          <div class="metric-value">8</div>
+          <div class="metric-change up">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 9L6 3l4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            +2 vs ayer
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Confirmadas</div>
+          <div class="metric-value">6</div>
+          <div class="metric-change neutral">2 pendientes</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">No-shows</div>
+          <div class="metric-value">1</div>
+          <div class="metric-change up">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 9L6 3l4 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            reducido 60%
+          </div>
+        </div>
+      </div>
+
+      <!-- Day strip -->
+      <div class="day-strip">
+        <div class="day-strip-header">
+          <span class="day-strip-title">Semana actual</span>
+          <div style="display:flex;gap:4px;">
+            <button class="btn-icon" style="width:28px;height:28px;">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="btn-icon" style="width:28px;height:28px;">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="days-row" id="days-row"></div>
+      </div>
+
+      <!-- Two col -->
+      <div class="two-col">
+        <!-- Citas -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="section-header">
+            <div>
+              <div class="section-title">Citas del día</div>
+              <div class="section-sub">Domingo, <span id="today-full"></span></div>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <div class="tabs">
+                <button class="tab active" onclick="filterAppts('todas',this)">Todas</button>
+                <button class="tab" onclick="filterAppts('confirmadas',this)">Confirmadas</button>
+                <button class="tab" onclick="filterAppts('pendientes',this)">Pendientes</button>
+              </div>
+            </div>
+          </div>
+          <div class="appt-list" id="appt-list"></div>
+        </div>
+
+        <!-- Sidebar widgets -->
+        <div style="display:flex;flex-direction:column;gap:14px;">
+          <div class="summary-card">
+            <div class="summary-title">Resumen del día</div>
+            <div class="summary-big">75%</div>
+            <div class="summary-sub">ocupación del día</div>
+            <div class="summary-stats">
+              <div class="summary-stat">
+                <div class="summary-stat-val">6 hrs</div>
+                <div class="summary-stat-label">Agendadas</div>
+              </div>
+              <div class="summary-stat">
+                <div class="summary-stat-val">3</div>
+                <div class="summary-stat-label">Estilistas</div>
+              </div>
+              <div class="summary-stat">
+                <div class="summary-stat-val">1</div>
+                <div class="summary-stat-label">No-show</div>
+              </div>
+              <div class="summary-stat">
+                <div class="summary-stat-val">2 hrs</div>
+                <div class="summary-stat-label">Libres hoy</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- IA Activity -->
+          <div class="activity-card">
+            <div class="activity-header">
+              <span class="activity-title">Agente IA</span>
+              <div class="ia-badge"><div class="ia-dot"></div>Activo</div>
+            </div>
+            <div class="chat-feed">
+              <div class="chat-item">
+                <div class="chat-avatar" style="background:#E8A87C;color:#6B3A2A;">KR</div>
+                <div class="chat-bubble">
+                  <div class="chat-name">Karla Ramos</div>
+                  <div class="chat-msg">Hola! Quisiera agendar un tinte para mañana 🙏</div>
+                  <div class="chat-time">hace 4 min</div>
+                </div>
+              </div>
+              <div class="chat-item" style="flex-direction:row-reverse;">
+                <div class="chat-avatar" style="background:var(--teal);color:#fff;font-size:9px;">IA</div>
+                <div class="chat-bubble ia">
+                  <div class="chat-name" style="color:var(--teal);">AgendaIA</div>
+                  <div class="chat-msg">¡Claro Karla! Tenemos disponible lunes a las 10am o 3pm. ¿Cuál prefieres?</div>
+                  <div class="chat-time">hace 2 min</div>
+                </div>
+              </div>
+              <div class="chat-item">
+                <div class="chat-avatar" style="background:#B0C4E8;color:#2A4A7A;">LP</div>
+                <div class="chat-bubble">
+                  <div class="chat-name">Lucía Pérez</div>
+                  <div class="chat-msg">Necesito cancelar mi cita de las 4pm de hoy</div>
+                  <div class="chat-time">hace 18 min</div>
+                </div>
+              </div>
+              <div class="chat-item" style="flex-direction:row-reverse;">
+                <div class="chat-avatar" style="background:var(--teal);color:#fff;font-size:9px;">IA</div>
+                <div class="chat-bubble ia">
+                  <div class="chat-name" style="color:var(--teal);">AgendaIA</div>
+                  <div class="chat-msg">Entendido Lucía. Cita cancelada ✓ ¿Te acomodo otro horario esta semana?</div>
+                  <div class="chat-time">hace 17 min</div>
+                </div>
+              </div>
+              <div class="chat-item">
+                <div class="chat-avatar" style="background:#C4B0E8;color:#4A2A7A;">SM</div>
+                <div class="chat-bubble">
+                  <div class="chat-name">Sofía Martínez</div>
+                  <div class="chat-msg">Quiero agendar manicure y pedicure 💅</div>
+                  <div class="chat-time">hace 32 min</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: CHAT IA ════ -->
+    <div class="page" id="page-chat">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Conversaciones del Agente IA</div>
+          <div class="section-sub">Todos los chats gestionados hoy</div>
+        </div>
+        <div class="ia-badge"><div class="ia-dot"></div>23 chats hoy</div>
+      </div>
+      <div class="card" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Cliente</th><th>Último mensaje</th><th>Estado</th><th>Cita generada</th><th>Hora</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><b>Karla Ramos</b><br><span style="color:var(--text3);font-size:11px;">+52 81 1234 5678</span></td><td>¿Cuál prefieres?</td><td><span class="status-badge s-pending"><span class="status-dot"></span>En curso</span></td><td>—</td><td>hace 4 min</td></tr>
+              <tr><td><b>Lucía Pérez</b><br><span style="color:var(--text3);font-size:11px;">+52 81 9876 5432</span></td><td>Cancelación procesada</td><td><span class="status-badge s-done"><span class="status-dot"></span>Resuelta</span></td><td>Cancelada</td><td>hace 17 min</td></tr>
+              <tr><td><b>Sofía Martínez</b></td><td>Mani + pedi agendado ✓</td><td><span class="status-badge s-confirmed"><span class="status-dot"></span>Resuelta</span></td><td>Mar 11:00am</td><td>hace 32 min</td></tr>
+              <tr><td><b>Andrea López</b></td><td>Confirmación enviada</td><td><span class="status-badge s-confirmed"><span class="status-dot"></span>Resuelta</span></td><td>Hoy 2:00pm</td><td>hace 1 hr</td></tr>
+              <tr><td><b>Patricia Herrera</b></td><td>Recordatorio enviado</td><td><span class="status-badge s-confirmed"><span class="status-dot"></span>Automático</span></td><td>Hoy 4:00pm</td><td>hace 2 hrs</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: CLIENTES ════ -->
+    <div class="page" id="page-clientes">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Clientes</div>
+          <div class="section-sub">42 clientes registrados</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input class="form-input" style="width:220px;" placeholder="Buscar cliente…">
+          <button class="btn btn-ghost">Exportar</button>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);">
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Cliente</th><th>Último servicio</th><th>Total visitas</th><th>Fuente</th></tr>
+            </thead>
+            <tbody id="clients-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════ PAGE: SERVICIOS ════ -->
+    <div class="page" id="page-servicios">
+      <div class="section-header">
+        <div class="section-title">Servicios</div>
+        <button class="btn btn-primary" onclick="document.getElementById('modal-servicio').classList.add('open')">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Nuevo servicio
+        </button>
+      </div>
+      <div class="services-grid" id="services-grid"></div>
+    </div>
+
+    <!-- ════ PAGE: CONFIGURACIÓN ════ -->
+    <div class="page" id="page-configuracion">
+      <div class="section-title">Configuración del negocio</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;max-width:700px;">
+        <div class="card" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
+          <div style="font-size:13px;font-weight:500;margin-bottom:14px;">Datos del salón</div>
+          <div class="form-row"><label class="form-label">Nombre del negocio</label><input class="form-input" value="Salón Bella"></div>
+          <div class="form-row"><label class="form-label">Dirección</label><input class="form-input" value="Av. Vasconcelos 300, San Pedro, MTY"></div>
+          <div class="form-row"><label class="form-label">WhatsApp de negocio</label><input class="form-input" value="+52 81 8888 8888"></div>
+          <div class="form-row"><label class="form-label">Mensaje de bienvenida del agente</label><textarea class="form-input" rows="3" style="resize:vertical;">Hola 👋 Soy la asistente virtual de Salón Bella. ¿En qué te puedo ayudar hoy?</textarea></div>
+          <button class="btn btn-primary" style="margin-top:4px;">Guardar cambios</button>
+        </div>
+        <div class="card" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);">
+          <div style="font-size:13px;font-weight:500;margin-bottom:14px;">Horarios de atención</div>
+          <div id="schedule-grid"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<!-- Modal: Nueva cita -->
+<div class="modal-overlay" id="modal-cita">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div class="modal-title" style="margin:0;">Nueva cita</div>
+      <button class="btn-icon" onclick="document.getElementById('modal-cita').classList.remove('open')">✕</button>
+    </div>
+    <div class="form-row"><label class="form-label">Cliente</label><input class="form-input" placeholder="Nombre del cliente"></div>
+    <div class="form-row"><label class="form-label">WhatsApp</label><input class="form-input" placeholder="+52 81 XXXX XXXX"></div>
+    <div class="form-row"><label class="form-label">Servicio</label>
+      <select class="form-select">
+        <option>Corte de cabello — 45 min</option>
+        <option>Tinte completo — 90 min</option>
+        <option>Manicure — 45 min</option>
+        <option>Pedicure — 60 min</option>
+        <option>Facial básico — 60 min</option>
+        <option>Mechas — 120 min</option>
+      </select>
+    </div>
+    <div class="form-row-2">
+      <div><label class="form-label">Fecha</label><input class="form-input" type="date"></div>
+      <div><label class="form-label">Hora</label><input class="form-input" type="time" value="10:00"></div>
+    </div>
+    <div class="form-row"><label class="form-label">Estilista</label>
+      <select class="form-select">
+        <option>Ana Ramírez</option>
+        <option>Carmen Vega</option>
+        <option>Diana Flores</option>
+      </select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-cita').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary" onclick="document.getElementById('modal-cita').classList.remove('open')">Guardar cita</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Nuevo servicio -->
+<div class="modal-overlay" id="modal-servicio">
+  <div class="modal">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div class="modal-title" style="margin:0;">Nuevo servicio</div>
+      <button class="btn-icon" onclick="document.getElementById('modal-servicio').classList.remove('open')">✕</button>
+    </div>
+    <div class="form-row"><label class="form-label">Nombre del servicio</label><input class="form-input" placeholder="Ej: Tinte completo"></div>
+    <div class="form-row"><label class="form-label">Duración (min)</label><input class="form-input" type="number" value="60"></div>
+    <div class="form-row"><label class="form-label">Descripción para el agente IA</label><textarea class="form-input" rows="2" placeholder="Describe el servicio para que el agente pueda explicarlo a los clientes…"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="document.getElementById('modal-servicio').classList.remove('open')">Cancelar</button>
+      <button class="btn btn-primary" onclick="document.getElementById('modal-servicio').classList.remove('open')">Crear servicio</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Data ──
+const APPOINTMENTS = [
+  { id:1, time:'09:00', ampm:'AM', client:'Andrea López', service:'Tinte completo', stylist:'Ana Ramírez', stylist_color:'#2A7B6F', status:'confirmed', duration:90, color:'#2A7B6F' },
+  { id:2, time:'10:30', ampm:'AM', client:'Patricia Herrera', service:'Manicure + Pedicure', stylist:'Carmen Vega', stylist_color:'#8B5E3C', status:'confirmed', duration:75, color:'#C4956A' },
+  { id:3, time:'11:30', ampm:'AM', client:'Sofía Martínez', service:'Corte de cabello', stylist:'Diana Flores', stylist_color:'#6B5FA0', status:'done', duration:45, color:'#6B5FA0' },
+  { id:4, time:'01:00', ampm:'PM', client:'Gabriela Torres', service:'Facial básico', stylist:'Ana Ramírez', stylist_color:'#2A7B6F', status:'confirmed', duration:60, color:'#2A7B6F' },
+  { id:5, time:'02:00', ampm:'PM', client:'Lucía Pérez', service:'Mechas', stylist:'Carmen Vega', stylist_color:'#8B5E3C', status:'cancelled', duration:120, color:'#C4584A' },
+  { id:6, time:'03:30', ampm:'PM', client:'Rosa Mendoza', service:'Corte + peinado', stylist:'Diana Flores', stylist_color:'#6B5FA0', status:'pending', duration:60, color:'#6B5FA0' },
+  { id:7, time:'04:30', ampm:'PM', client:'Valentina Cruz', service:'Tinte raíz', stylist:'Ana Ramírez', stylist_color:'#2A7B6F', status:'pending', duration:75, color:'#2A7B6F' },
+  { id:8, time:'05:30', ampm:'PM', client:'Isabel Morales', service:'Manicure gel', stylist:'Carmen Vega', stylist_color:'#8B5E3C', status:'confirmed', duration:60, color:'#C4956A' },
+];
+
+const SERVICES = [
+  { name:'Corte de cabello', icon:'✂️', duration:'45 min', count:12 },
+  { name:'Tinte completo', icon:'🎨', duration:'90 min', count:9 },
+  { name:'Manicure', icon:'💅', duration:'45 min', count:15 },
+  { name:'Pedicure', icon:'🦶', duration:'60 min', count:8 },
+  { name:'Facial básico', icon:'✨', duration:'60 min', count:6 },
+  { name:'Mechas', icon:'💇', duration:'120 min', count:5 },
+];
+
+const CLIENTS = [
+  { name:'Andrea López', service:'Tinte', visits:8, source:'WhatsApp IA' },
+  { name:'Patricia Herrera', service:'Manicure', visits:12, source:'WhatsApp IA' },
+  { name:'Sofía Martínez', service:'Corte', visits:5, source:'Referido' },
+  { name:'Gabriela Torres', service:'Facial', visits:3, source:'WhatsApp IA' },
+  { name:'Rosa Mendoza', service:'Mechas', visits:6, source:'Instagram' },
+  { name:'Valentina Cruz', service:'Tinte raíz', visits:4, source:'WhatsApp IA' },
+  { name:'Isabel Morales', service:'Manicure gel', visits:9, source:'WhatsApp IA' },
+];
+
+const DAYS = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const DAY_COUNTS = [8,5,9,7,6,10,4];
+
+// ── Init ──
+const today = new Date();
+document.getElementById('topbar-date').textContent = '— ' + today.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'long'});
+document.getElementById('today-full').textContent = today.toLocaleDateString('es-MX',{day:'numeric',month:'long'});
+
+// Build day strip
+(function buildDays(){
+  const row = document.getElementById('days-row');
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - today.getDay());
+  for(let i=0;i<7;i++){
+    const d = new Date(startOfWeek); d.setDate(startOfWeek.getDate()+i);
+    const isToday = d.toDateString()===today.toDateString();
+    const count = DAY_COUNTS[i];
+    const pill = document.createElement('div');
+    pill.className = 'day-pill' + (isToday?' today':'') + (count>0?' has-appts':'');
+    const dots = Array.from({length:Math.min(count,3)},()=>'<div class="day-dot"></div>').join('');
+    pill.innerHTML = `<div class="day-name">${DAYS[i]}</div><div class="day-num">${d.getDate()}</div><div class="day-dots">${dots}</div>`;
+    row.appendChild(pill);
+  }
+})();
+
+// Build appointments
+function buildAppts(filter='todas'){
+  const list = document.getElementById('appt-list');
+  list.innerHTML = '';
+  const filtered = filter==='todas' ? APPOINTMENTS
+    : filter==='confirmadas' ? APPOINTMENTS.filter(a=>a.status==='confirmed')
+    : APPOINTMENTS.filter(a=>a.status==='pending');
+
+  if(!filtered.length){ list.innerHTML = '<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">Sin citas en este filtro</div></div>'; return; }
+
+  filtered.forEach(a=>{
+    const statusMap = {confirmed:{cls:'s-confirmed',label:'Confirmada'},pending:{cls:'s-pending',label:'Pendiente'},done:{cls:'s-done',label:'Completada'},cancelled:{cls:'s-cancelled',label:'Cancelada'}};
+    const s = statusMap[a.status];
+    const initials = a.stylist.split(' ').map(x=>x[0]).join('');
+    list.innerHTML += `
+    <div class="appt-card">
+      <div class="appt-time"><div class="time-main">${a.time}</div><div class="time-ampm">${a.ampm}</div></div>
+      <div class="appt-divider"></div>
+      <div class="appt-color-bar" style="background:${a.color};"></div>
+      <div class="appt-info">
+        <div class="appt-client">${a.client}</div>
+        <div class="appt-service">${a.service}</div>
+        <div class="appt-meta">
+          <span>${a.duration} min</span>
+          <span>·</span>
+          <div class="appt-stylist"><div class="stylist-avatar" style="background:${a.stylist_color};">${initials}</div>${a.stylist}</div>
+        </div>
+      </div>
+      <span class="status-badge ${s.cls}"><span class="status-dot"></span>${s.label}</span>
+      <div class="appt-price">${a.price}</div>
+      <div class="appt-actions">
+        <button class="action-btn" title="Editar">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 2.5l2 2L3 11H1V9L7.5 2.5z" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="action-btn danger" title="Cancelar">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2L2 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>`;
+  });
+}
+buildAppts();
+
+function filterAppts(filter, btn){
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  buildAppts(filter);
+}
+
+// Build services
+(function buildServices(){
+  const grid = document.getElementById('services-grid');
+  SERVICES.forEach(s=>{
+    grid.innerHTML += `
+    <div class="service-card">
+      <div class="service-icon" style="background:var(--surface2);">${s.icon}</div>
+      <div class="service-name">${s.name}</div>
+      <div class="service-duration">${s.duration}</div>
+      <div class="service-count">${s.count} citas este mes</div>
+    </div>`;
+  });
+})();
+
+// Build clients
+(function buildClients(){
+  const tbody = document.getElementById('clients-table');
+  const colors = ['#2A7B6F','#C4956A','#6B5FA0','#C4584A','#8B5E3C','#B07A28','#2A7B6F'];
+  CLIENTS.forEach((c,i)=>{
+    const initials = c.name.split(' ').map(x=>x[0]).join('');
+    tbody.innerHTML += `<tr>
+      <td><div style="display:flex;align-items:center;gap:8px;"><div class="stylist-avatar" style="background:${colors[i%colors.length]};">${initials}</div><div><div style="font-weight:500;">${c.name}</div></div></div></td>
+      <td>${c.service}</td>
+      <td>${c.visits} visitas</td>
+      <td><span class="status-badge ${c.source.includes('IA')?'s-confirmed':'s-done'}"><span class="status-dot"></span>${c.source}</span></td>
+    </tr>`;
+  });
+})();
+
+// Build schedule
+(function buildSchedule(){
+  const grid = document.getElementById('schedule-grid');
+  const days = ['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+  const hours = ['9:00 – 7:00 pm','9:00 – 7:00 pm','9:00 – 7:00 pm','9:00 – 7:00 pm','9:00 – 7:00 pm','10:00 – 6:00 pm','Cerrado'];
+  days.forEach((d,i)=>{
+    const closed = i===6;
+    grid.innerHTML += `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;${i===6?'border-bottom:none':''}">
+      <span style="font-weight:500;color:${closed?'var(--text3)':'var(--text)'};">${d}</span>
+      <span style="color:${closed?'var(--coral)':'var(--text2)'};">${hours[i]}</span>
+    </div>`;
+  });
+})();
+
+// Navigation
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  const titles = {agenda:'Agenda de hoy',chat:'Chat IA',clientes:'Clientes',servicios:'Servicios',configuracion:'Configuración'};
+  document.getElementById('topbar-title').textContent = titles[name]||name;
+}
+
+// Close modal on overlay click
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  o.addEventListener('click',e=>{ if(e.target===o) o.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
