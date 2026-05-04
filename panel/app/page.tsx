@@ -66,8 +66,14 @@ export default function Panel() {
   const [modalCita, setModalCita] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const today = new Date();
-  const todayStr = today.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' });
+  const [today, setToday] = useState(() => new Date());
+  const [todayStr, setTodayStr] = useState('');
+
+  useEffect(() => {
+    const d = new Date();
+    setToday(d);
+    setTodayStr(d.toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long' }));
+  }, []);
   const negocio = negocios.find(n => n.id === selectedId);
 
   useEffect(() => {
