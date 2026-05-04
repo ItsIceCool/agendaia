@@ -66,7 +66,7 @@ export default function Panel() {
   const [modalCita, setModalCita] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [today, setToday] = useState(() => new Date());
+  const [today, setToday] = useState<Date>(new Date(0));
   const [todayStr, setTodayStr] = useState('');
 
   useEffect(() => {
