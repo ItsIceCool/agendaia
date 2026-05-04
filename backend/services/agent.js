@@ -8,7 +8,7 @@ async function askMistral(prompt) {
   const response = await axios.post(
     `${OLLAMA_URL}/api/generate`,
     { model: MODEL, prompt, stream: false },
-    { timeout: 120000 }
+    { timeout: 300000 }
   );
   return response.data.response;
 }
