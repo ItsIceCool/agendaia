@@ -18,7 +18,12 @@ router.post('/agent', async (req, res) => {
     const reply = await askMistral(message);
     res.json({ ok: true, reply });
   } catch (err) {
-    res.status(500).json({ ok: false, error: err.message });
+    res.status(500).json({
+      ok: false,
+      error: err.message,
+      url: err.config?.url,
+      ollamaResponse: err.response?.data,
+    });
   }
 });
 
