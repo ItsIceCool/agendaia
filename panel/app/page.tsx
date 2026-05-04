@@ -197,7 +197,7 @@ export default function Panel() {
         <header className="topbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span className="page-title">{pageTitles[page]}</span>
-            <span className="page-date">— {todayStr}</span>
+            <span className="page-date" suppressHydrationWarning>— {todayStr}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div className="notif-wrap">
