@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ['panel.profilelink.lol'],
+  /* config options here */
 };
 
 export default nextConfig;
