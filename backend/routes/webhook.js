@@ -20,17 +20,24 @@ router.get('/', (req, res) => {
 router.post('/', async (req, res) => {
   res.sendStatus(200); // Responder a Meta de inmediato
 
+  console.log('📩 Webhook recibido:', JSON.stringify(req.body, null, 2));
+
   try {
     const entry = req.body?.entry?.[0];
     const change = entry?.changes?.[0];
     const value = change?.value;
 
-    if (!value?.messages?.length) return;
+    if (!value?.messages?.length) {
+      console.log('⚠️ Sin mensajes en el payload, ignorando.');
+      return;
+    }
 
     const phoneNumberId = value.metadata.phone_number_id;
     const message = value.messages[0];
     const from = message.from;
     const text = message.text?.body;
+
+    console.log(`📱 Mensaje de ${from} a phoneId ${phoneNumberId}: "${text}"`);
 
     if (!text) return;
 
@@ -39,13 +46,16 @@ router.post('/', async (req, res) => {
       'SELECT * FROM negocios WHERE whatsapp_phone_id = $1',
       [phoneNumberId]
     );
+    console.log(`🏪 Negocio encontrado: ${rows.length > 0 ? rows[0].nombre : 'NINGUNO'}`);
     if (!rows.length) return;
 
     const negocio = rows[0];
     const respuesta = await handleIncomingMessage({ negocio, from, text });
+    console.log(`🤖 Respuesta del agente: "${respuesta}"`);
     await sendMessage({ phoneNumberId, to: from, message: respuesta });
+    console.log('✅ Mensaje enviado a WhatsApp');
   } catch (err) {
-    console.error('Error en webhook:', err.message);
+    console.error('❌ Error en webhook:', err.message);
   }
 });
 
