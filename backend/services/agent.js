@@ -1,27 +1,19 @@
 const axios = require('axios');
 const db = require('../db/postgres');
-const { getAvailableSlots, createEvent } = require('./calendar');
 
 const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434';
-const MODEL = process.env.OLLAMA_MODEL || 'mistral';
+const MODEL = process.env.OLLAMA_MODEL || 'mistral:7b';
 
-async function askMistral(systemPrompt, conversationHistory) {
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    ...conversationHistory,
-  ];
-
-  const response = await axios.post(`${OLLAMA_URL}/api/chat`, {
-    model: MODEL,
-    messages,
-    stream: false,
-  });
-
-  return response.data.message.content;
+async function askMistral(prompt) {
+  const response = await axios.post(
+    `${OLLAMA_URL}/api/generate`,
+    { model: MODEL, prompt, stream: false },
+    { timeout: 120000 }
+  );
+  return response.data.response;
 }
 
 async function handleIncomingMessage({ negocio, from, text }) {
-  // Recuperar historial de conversación del cliente
   const { rows: history } = await db.query(
     `SELECT rol, contenido FROM conversaciones
      WHERE negocio_id = $1 AND cliente_whatsapp = $2
@@ -29,16 +21,13 @@ async function handleIncomingMessage({ negocio, from, text }) {
     [negocio.id, from]
   );
 
-  const conversationHistory = history.map((r) => ({
-    role: r.rol,
-    content: r.contenido,
-  }));
-  conversationHistory.push({ role: 'user', content: text });
+  const historyText = history
+    .map((r) => `${r.rol === 'user' ? 'Cliente' : 'Asistente'}: ${r.contenido}`)
+    .join('\n');
 
-  const systemPrompt = buildSystemPrompt(negocio);
-  const respuesta = await askMistral(systemPrompt, conversationHistory);
+  const prompt = buildPrompt({ negocio, historyText, userMessage: text });
+  const respuesta = await askMistral(prompt);
 
-  // Guardar turno del usuario y respuesta del agente
   await db.query(
     `INSERT INTO conversaciones (negocio_id, cliente_whatsapp, rol, contenido)
      VALUES ($1, $2, 'user', $3), ($1, $2, 'assistant', $4)`,
@@ -48,7 +37,7 @@ async function handleIncomingMessage({ negocio, from, text }) {
   return respuesta;
 }
 
-function buildSystemPrompt(negocio) {
+function buildPrompt({ negocio, historyText, userMessage }) {
   const horarios = JSON.stringify(negocio.horarios, null, 2);
   return `${negocio.prompt_personalizado || 'Eres un asistente de agendamiento amable y profesional.'}
 
@@ -58,7 +47,10 @@ ${horarios}
 
 Tu rol es ayudar a los clientes a agendar, reagendar o cancelar citas.
 Cuando el cliente quiera agendar, pregunta: nombre, servicio, fecha y hora preferida.
-Responde siempre en español, de forma breve y clara.`;
+Responde siempre en español, de forma breve y clara.
+
+${historyText ? `Conversación previa:\n${historyText}\n` : ''}Cliente: ${userMessage}
+Asistente:`;
 }
 
-module.exports = { handleIncomingMessage };
+module.exports = { handleIncomingMessage, askMistral };

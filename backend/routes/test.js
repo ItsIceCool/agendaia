@@ -1,9 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
 const db = require('../db/postgres');
+const { askMistral } = require('../services/agent');
 
-// Prueba conexión a PostgreSQL
 router.get('/db', async (req, res) => {
   try {
     const { rows } = await db.query('SELECT NOW() as time');
@@ -13,20 +12,11 @@ router.get('/db', async (req, res) => {
   }
 });
 
-// Prueba conexión a Ollama / Mistral
 router.post('/agent', async (req, res) => {
-  const { message = '¿Puedes saludarme en español?' } = req.body;
+  const { message = 'Hola, ¿cómo estás?' } = req.body;
   try {
-    const response = await axios.post(
-      `${process.env.OLLAMA_URL || 'http://localhost:11434'}/api/chat`,
-      {
-        model: process.env.OLLAMA_MODEL || 'mistral',
-        messages: [{ role: 'user', content: message }],
-        stream: false,
-      },
-      { timeout: 60000 }
-    );
-    res.json({ ok: true, reply: response.data.message.content });
+    const reply = await askMistral(message);
+    res.json({ ok: true, reply });
   } catch (err) {
     res.status(500).json({ ok: false, error: err.message });
   }
