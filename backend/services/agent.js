@@ -7,8 +7,13 @@ const MODEL = process.env.OLLAMA_MODEL || 'mistral:7b';
 async function askMistral(prompt) {
   const response = await axios.post(
     `${OLLAMA_URL}/api/generate`,
-    { model: MODEL, prompt, stream: false },
-    { timeout: 300000 }
+    {
+      model: MODEL,
+      prompt,
+      stream: false,
+      options: { num_predict: 200, temperature: 0.7 },
+    },
+    { timeout: 60000 }
   );
   return response.data.response;
 }
@@ -47,7 +52,7 @@ ${horarios}
 
 Tu rol es ayudar a los clientes a agendar, reagendar o cancelar citas.
 Cuando el cliente quiera agendar, pregunta: nombre, servicio, fecha y hora preferida.
-Responde siempre en español, de forma breve y clara.
+IMPORTANTE: Responde SIEMPRE en español, en máximo 2 oraciones cortas. Sin listas, sin explicaciones largas.
 
 ${historyText ? `Conversación previa:\n${historyText}\n` : ''}Cliente: ${userMessage}
 Asistente:`;
